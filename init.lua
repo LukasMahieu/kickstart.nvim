@@ -163,6 +163,8 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- Allow gui colors
+vim.opt.termguicolors = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
@@ -220,6 +222,11 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-m>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- Terminal mode: same jklm navigation (escape terminal first, then switch window)
+vim.keymap.set('t', '<C-j>', '<C-\\><C-n><C-w>h', { desc = 'Move focus to the left window' })
+vim.keymap.set('t', '<C-k>', '<C-\\><C-n><C-w>j', { desc = 'Move focus to the lower window' })
+vim.keymap.set('t', '<C-l>', '<C-\\><C-n><C-w>k', { desc = 'Move focus to the upper window' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -320,7 +327,7 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
-  { -- Useful plugin to show you pending keybinds.
+  {                     -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -401,7 +408,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -509,7 +516,7 @@ require('lazy').setup({
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',    opts = {} },
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
@@ -857,7 +864,7 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        preset = 'enter',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -968,6 +975,31 @@ require('lazy').setup({
       }
     end,
   },
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" }
+  },
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre", -- this will only start session saving when an actual file was opened
+    opts = {
+      -- add any custom options here
+    }
+  },
+  {
+    "greggh/claude-code.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- Required for git operations
+    },
+    config = function()
+      require("claude-code").setup({
+        keymaps = {
+          window_navigation = false, -- Disable default hjkl, using global jklm keymaps instead
+        },
+      })
+    end
+  },
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -1015,6 +1047,52 @@ require('lazy').setup({
     },
   },
 })
+-- Harpoon settings
+local harpoon = require("harpoon")
+harpoon:setup()
 
+-- basic telescope configuration
+local conf = require("telescope.config").values
+local function toggle_telescope(harpoon_files)
+  local file_paths = {}
+  for _, item in ipairs(harpoon_files.items) do
+    table.insert(file_paths, item.value)
+  end
+
+  require("telescope.pickers").new({}, {
+    prompt_title = "Harpoon",
+    finder = require("telescope.finders").new_table({
+      results = file_paths,
+    }),
+    previewer = conf.file_previewer({}),
+    sorter = conf.generic_sorter({}),
+  }):find()
+end
+
+vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end, { desc = "harpoon add" })
+vim.keymap.set("n", "<leader>hh", function() toggle_telescope(harpoon:list()) end, { desc = "harpoon UI" })
+
+vim.keymap.set("n", "<leader>h1", function() harpoon:list():select(1) end, { desc = "tab 1" })
+vim.keymap.set("n", "<leader>h2", function() harpoon:list():select(2) end, { desc = "tab 2" })
+vim.keymap.set("n", "<leader>h3", function() harpoon:list():select(3) end, { desc = "tab 3" })
+vim.keymap.set("n", "<leader>h4", function() harpoon:list():select(4) end, { desc = "tab 4" })
+
+-- Toggle previous & next buffers stored within Harpoon list
+vim.keymap.set("n", "<leader>hp", function() harpoon:list():prev() end)
+vim.keymap.set("n", "<leader>hn", function() harpoon:list():next() end)
+
+-- Restore Persistence sessions
+-- load the session for the current directory
+vim.keymap.set("n", "<leader>qs", function() require("persistence").load() end)
+
+-- select a session to load
+vim.keymap.set("n", "<leader>qS", function() require("persistence").select() end)
+
+-- load the last session
+vim.keymap.set("n", "<leader>ql", function() require("persistence").load({ last = true }) end)
+
+-- stop Persistence => session won't be saved on exit
+vim.keymap.set("n", "<leader>qd", function() require("persistence").stop() end)
+--
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
