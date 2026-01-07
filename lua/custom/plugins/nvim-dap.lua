@@ -70,42 +70,40 @@ return {
       dap.listeners.before.event_terminated['dapui_config'] = dapui.close
       dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
-      local opts = { noremap = true, silent = true }
-
       -- Toggle breakpoint
       vim.keymap.set('n', '<leader>db', function()
         dap.toggle_breakpoint()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: Toggle [B]reakpoint' })
 
       -- Continue / Start
       vim.keymap.set('n', '<leader>dc', function()
         dap.continue()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: [C]ontinue' })
 
       -- Step Over
       vim.keymap.set('n', '<leader>do', function()
         dap.step_over()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: Step [O]ver' })
 
       -- Step Into
       vim.keymap.set('n', '<leader>di', function()
         dap.step_into()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: Step [I]nto' })
 
       -- Step Out
       vim.keymap.set('n', '<leader>dO', function()
         dap.step_out()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: Step [O]ut' })
 
-      -- Keymap to terminate debugging
+      -- Terminate debugging
       vim.keymap.set('n', '<leader>dq', function()
-        require('dap').terminate()
-      end, opts)
+        dap.terminate()
+      end, { noremap = true, silent = true, desc = '[D]ebug: [Q]uit/Terminate' })
 
       -- Toggle DAP UI
       vim.keymap.set('n', '<leader>du', function()
         dapui.toggle()
-      end, opts)
+      end, { noremap = true, silent = true, desc = '[D]ebug: Toggle [U]I' })
     end,
   },
 }
