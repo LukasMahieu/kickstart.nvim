@@ -310,6 +310,55 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      on_attach = function(bufnr)
+        local gitsigns = require 'gitsigns'
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
+        -- Navigation
+        map('n', ']c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { ']c', bang = true }
+          else
+            gitsigns.nav_hunk 'next'
+          end
+        end, { desc = 'Jump to next git [c]hange' })
+
+        map('n', '[c', function()
+          if vim.wo.diff then
+            vim.cmd.normal { '[c', bang = true }
+          else
+            gitsigns.nav_hunk 'prev'
+          end
+        end, { desc = 'Jump to previous git [c]hange' })
+
+        -- Actions
+        -- visual mode
+        map('v', '<leader>gs', function()
+          gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'git [s]tage hunk' })
+        map('v', '<leader>gr', function()
+          gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'git [r]eset hunk' })
+        -- normal mode
+        map('n', '<leader>gs', gitsigns.stage_hunk, { desc = 'git [s]tage hunk' })
+        map('n', '<leader>gr', gitsigns.reset_hunk, { desc = 'git [r]eset hunk' })
+        map('n', '<leader>gS', gitsigns.stage_buffer, { desc = 'git [S]tage buffer' })
+        map('n', '<leader>gu', gitsigns.undo_stage_hunk, { desc = 'git [u]ndo stage hunk' })
+        map('n', '<leader>gR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
+        map('n', '<leader>gp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
+        map('n', '<leader>gb', gitsigns.blame_line, { desc = 'git [b]lame line' })
+        map('n', '<leader>gd', gitsigns.diffthis, { desc = 'git [d]iff against index' })
+        map('n', '<leader>gD', function()
+          gitsigns.diffthis '@'
+        end, { desc = 'git [D]iff against last commit' })
+        -- Toggles
+        map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
+        map('n', '<leader>tD', gitsigns.toggle_deleted, { desc = '[T]oggle git show [D]eleted' })
+      end,
     },
   },
 
@@ -375,7 +424,7 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>g', group = '[G]it', mode = { 'n', 'v' } },
       },
     },
   },
@@ -975,11 +1024,11 @@ require('lazy').setup({
       }
     end,
   },
-  {
-    'ThePrimeagen/harpoon',
-    branch = 'harpoon2',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-  },
+  -- {
+  --   'ThePrimeagen/harpoon',
+  --   branch = 'harpoon2',
+  --   dependencies = { 'nvim-lua/plenary.nvim' },
+  -- },
   {
     'folke/persistence.nvim',
     event = 'BufReadPre', -- this will only start session saving when an actual file was opened
@@ -1013,7 +1062,7 @@ require('lazy').setup({
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps (now integrated in main config above)
   -- NOTE The import
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -1046,57 +1095,57 @@ require('lazy').setup({
     },
   },
 })
--- Harpoon settings
-local harpoon = require 'harpoon'
-harpoon:setup()
-
--- basic telescope configuration
-local conf = require('telescope.config').values
-local function toggle_telescope(harpoon_files)
-  local file_paths = {}
-  for _, item in ipairs(harpoon_files.items) do
-    table.insert(file_paths, item.value)
-  end
-
-  require('telescope.pickers')
-    .new({}, {
-      prompt_title = 'Harpoon',
-      finder = require('telescope.finders').new_table {
-        results = file_paths,
-      },
-      previewer = conf.file_previewer {},
-      sorter = conf.generic_sorter {},
-    })
-    :find()
-end
-
-vim.keymap.set('n', '<leader>ha', function()
-  harpoon:list():add()
-end, { desc = 'harpoon add' })
-vim.keymap.set('n', '<leader>hh', function()
-  toggle_telescope(harpoon:list())
-end, { desc = 'harpoon UI' })
-
-vim.keymap.set('n', '<leader>h1', function()
-  harpoon:list():select(1)
-end, { desc = 'tab 1' })
-vim.keymap.set('n', '<leader>h2', function()
-  harpoon:list():select(2)
-end, { desc = 'tab 2' })
-vim.keymap.set('n', '<leader>h3', function()
-  harpoon:list():select(3)
-end, { desc = 'tab 3' })
-vim.keymap.set('n', '<leader>h4', function()
-  harpoon:list():select(4)
-end, { desc = 'tab 4' })
-
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set('n', '<leader>hp', function()
-  harpoon:list():prev()
-end)
-vim.keymap.set('n', '<leader>hn', function()
-  harpoon:list():next()
-end)
+-- -- Harpoon settings
+-- local harpoon = require 'harpoon'
+-- harpoon:setup()
+--
+-- -- basic telescope configuration
+-- local conf = require('telescope.config').values
+-- local function toggle_telescope(harpoon_files)
+--   local file_paths = {}
+--   for _, item in ipairs(harpoon_files.items) do
+--     table.insert(file_paths, item.value)
+--   end
+--
+--   require('telescope.pickers')
+--     .new({}, {
+--       prompt_title = 'Harpoon',
+--       finder = require('telescope.finders').new_table {
+--         results = file_paths,
+--       },
+--       previewer = conf.file_previewer {},
+--       sorter = conf.generic_sorter {},
+--     })
+--     :find()
+-- end
+--
+-- vim.keymap.set('n', '<leader>ha', function()
+--   harpoon:list():add()
+-- end, { desc = 'harpoon add' })
+-- vim.keymap.set('n', '<leader>hh', function()
+--   toggle_telescope(harpoon:list())
+-- end, { desc = 'harpoon UI' })
+--
+-- vim.keymap.set('n', '<leader>h1', function()
+--   harpoon:list():select(1)
+-- end, { desc = 'tab 1' })
+-- vim.keymap.set('n', '<leader>h2', function()
+--   harpoon:list():select(2)
+-- end, { desc = 'tab 2' })
+-- vim.keymap.set('n', '<leader>h3', function()
+--   harpoon:list():select(3)
+-- end, { desc = 'tab 3' })
+-- vim.keymap.set('n', '<leader>h4', function()
+--   harpoon:list():select(4)
+-- end, { desc = 'tab 4' })
+--
+-- -- Toggle previous & next buffers stored within Harpoon list
+-- vim.keymap.set('n', '<leader>hp', function()
+--   harpoon:list():prev()
+-- end)
+-- vim.keymap.set('n', '<leader>hn', function()
+--   harpoon:list():next()
+-- end)
 
 -- Restore Persistence sessions
 -- load the session for the current directory
