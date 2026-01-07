@@ -5,7 +5,7 @@ return {
     'nvim-treesitter/nvim-treesitter',
   },
   config = function()
-    require('image').setup({
+    require('image').setup {
       backend = 'kitty',
       integrations = {
         markdown = {
@@ -25,11 +25,13 @@ return {
       },
       max_width = nil,
       max_height = nil,
-      max_width_window_percentage = nil,
-      max_height_window_percentage = 50,
+      max_width_window_percentage = math.huge,
+      max_height_window_percentage = math.huge,
+      window_overlap_clear_enabled = true,
+      window_overlap_clear_ft_ignore = { 'cmp_menu', 'cmp_docs', '' },
       kitty_method = 'normal',
       -- Explicitly enable kitty for ghostty
       kitty_tmux_write_delay = 10,
-    })
+    }
   end,
 }
