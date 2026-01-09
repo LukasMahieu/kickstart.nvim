@@ -2,6 +2,7 @@ return {
   {
     'benlubas/molten-nvim',
     version = '^1.0.0', -- use version <2.0.0 to avoid breaking changes
+    lazy = false,
     dependencies = { '3rd/image.nvim' },
     build = function()
       -- Create virtualenv and install Python dependencies
