@@ -202,7 +202,10 @@ vim.o.confirm = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>qe', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror in float' })
+vim.keymap.set('n', '<leader>qq', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>qn', vim.diagnostic.goto_next, { desc = 'Go to [N]ext diagnostic' })
+vim.keymap.set('n', '<leader>qp', vim.diagnostic.goto_prev, { desc = 'Go to [P]revious diagnostic' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -430,6 +433,7 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>g', group = '[G]it', mode = { 'n', 'v' } },
         { '<leader>m', group = '[M]olten' },
+        { '<leader>q', group = '[Q] Diagnostics' },
       },
     },
   },
@@ -757,6 +761,21 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         pyright = {},
+        ruff = {
+          init_options = {
+            settings = {
+              -- Use project's pyproject.toml for configuration
+              configurationPreference = 'filesystemFirst',
+              -- Enable organize imports and fix all code actions
+              organizeImports = true,
+              fixAll = true,
+            },
+          },
+          on_attach = function(client, bufnr)
+            -- Disable hover in favor of Pyright
+            client.server_capabilities.hoverProvider = false
+          end,
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -799,6 +818,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'ruff',   -- Python linter and formatter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -851,8 +871,8 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        python = { 'ruff_organize_imports', 'ruff_format' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -1129,26 +1149,6 @@ require('lazy').setup({
 --   harpoon:list():next()
 -- end)
 
--- Restore Persistence sessions
--- load the session for the current directory
-vim.keymap.set('n', '<leader>qs', function()
-  require('persistence').load()
-end)
-
--- select a session to load
-vim.keymap.set('n', '<leader>qS', function()
-  require('persistence').select()
-end)
-
--- load the last session
-vim.keymap.set('n', '<leader>ql', function()
-  require('persistence').load { last = true }
-end)
-
--- stop Persistence => session won't be saved on exit
-vim.keymap.set('n', '<leader>qd', function()
-  require('persistence').stop()
-end)
 --
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
