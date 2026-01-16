@@ -114,7 +114,9 @@ vim.keymap.set('o', 'k', 'j', opts)
 vim.keymap.set('o', 'l', 'k', opts)
 vim.keymap.set('o', 'm', 'l', opts)
 
-vim.keymap.set('n', ',', 'm', opts)
+-- Mark keybinding (since 'm' is used for movement on AZERTY)
+vim.keymap.set('n', ',', 'm', { noremap = true, silent = true, desc = 'Set mark' })
+vim.keymap.set('v', ',', 'm', { noremap = true, silent = true, desc = 'Set mark' })
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
