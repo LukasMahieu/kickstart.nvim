@@ -16,24 +16,24 @@ return {
       end
 
       -- Install required packages
-      print('Installing Python dependencies...')
+      print 'Installing Python dependencies...'
       local packages = {
         'pynvim',
         'jupyter_client',
-        'jupytext',     -- required: for jupytext.nvim plugin
-        'cairosvg',     -- optional: for transparent SVG images
-        'pnglatex',     -- optional: for TeX formulas (requires TeX distribution)
-        'plotly',       -- optional: for Plotly figures
-        'kaleido',      -- optional: for Plotly figures
-        'pyperclip',    -- optional: for molten_copy_output
+        'jupytext', -- required: for jupytext.nvim plugin
+        'cairosvg', -- optional: for transparent SVG images
+        'pnglatex', -- optional: for TeX formulas (requires TeX distribution)
+        'plotly', -- optional: for Plotly figures
+        'kaleido', -- optional: for Plotly figures
+        'pyperclip', -- optional: for molten_copy_output
       }
 
       vim.fn.system(python_bin .. ' -m pip install --upgrade pip')
       vim.fn.system(python_bin .. ' -m pip install ' .. table.concat(packages, ' '))
 
       -- Run UpdateRemotePlugins
-      vim.cmd('UpdateRemotePlugins')
-      print('Python dependencies installed successfully!')
+      vim.cmd 'UpdateRemotePlugins'
+      print 'Python dependencies installed successfully!'
     end,
     init = function()
       -- Point Neovim to the dedicated virtual environment
@@ -127,15 +127,14 @@ return {
     keys = {
       { '<leader>mi', ':MoltenInit<CR>', desc = 'Molten [I]nit kernel' },
       { '<leader>mI', ':MoltenRestart<CR>', desc = 'Molten restart kernel' },
-      { '<leader>me', ':MoltenEvaluateOperator<CR>', mode = 'n', desc = 'Molten [E]valuate operator' },
       { '<leader>ml', ':MoltenEvaluateLine<CR>', desc = 'Molten evaluate [L]ine' },
       { '<leader>mc', ':MoltenRunCodeBlock<CR>', desc = 'Molten run [C]ode block' },
-      { '<leader>mr', ':MoltenReevaluateCell<CR>', desc = 'Molten [R]e-evaluate cell' },
       { '<leader>mv', ':<C-u>MoltenEvaluateVisual<CR>gv', mode = 'v', desc = 'Molten evaluate [V]isual' },
       { '<leader>md', ':MoltenDelete<CR>', desc = 'Molten [D]elete cell' },
       { '<leader>mo', ':MoltenShowOutput<CR>', desc = 'Molten show [O]utput' },
       { '<leader>mh', ':MoltenHideOutput<CR>', desc = 'Molten [H]ide output' },
       { '<leader>mx', ':MoltenInterrupt<CR>', desc = 'Molten interrupt e[X]ecution' },
+      { '<leader>me', ':MoltenEnterOutput<CR>', desc = 'Molten [E]nter output' },
       -- Notebook operations
       { '<leader>mn', ':MoltenNext<CR>', desc = 'Molten [N]ext cell' },
       { '<leader>mp', ':MoltenPrev<CR>', desc = 'Molten [P]rev cell' },
