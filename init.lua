@@ -763,6 +763,14 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         pyright = {},
+        -- TypeScript/JavaScript
+        ts_ls = {},
+        -- Svelte
+        svelte = {},
+        -- HTML
+        html = {},
+        -- CSS
+        cssls = {},
         ruff = {
           init_options = {
             settings = {
@@ -819,8 +827,9 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
-        'ruff',   -- Python linter and formatter
+        'stylua',    -- Used to format Lua code
+        'ruff',      -- Python linter and formatter
+        'prettierd', -- Fast prettier daemon for JS/TS/HTML/CSS formatting
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -875,9 +884,14 @@ require('lazy').setup({
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' },
         -- Conform can also run multiple formatters sequentially
-        --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
