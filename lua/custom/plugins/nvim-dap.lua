@@ -53,14 +53,15 @@ return {
         end
 
         -- 3. Fall back to PATH
-        local python_path = vim.fn.exepath('python')
+        local python_path = vim.fn.exepath 'python'
         if python_path ~= '' then
           return python_path
         end
 
-        return vim.fn.exepath('python3')
+        return vim.fn.exepath 'python3'
       end
 
+      --[[
       local python_path = get_python_path()
       print('nvim-dap using Python: ' .. python_path)
       dap_python.setup(python_path)
@@ -101,8 +102,9 @@ return {
           },
         },
         justMyCode = false,
-      })
-
+})
+	]]
+      --
       -- Go debugging setup
       require('dap-go').setup {
         delve = {
