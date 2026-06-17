@@ -48,6 +48,74 @@ return {
       vim.g.molten_virt_lines_off_by_1 = true -- Fix virtual text positioning
     end,
     config = function()
+      -- Function to run all code blocks using visual selection
+      local function run_all_code_blocks()
+        local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+        local total = #lines
+
+        -- Collect cell locations (start and end line numbers for code content)
+        local cells = {}
+        local i = 1
+        while i <= total do
+          local line = lines[i]
+          if line:match '^```python' or line:match '^```{python}' then
+            local code_start = i + 1
+            for j = code_start, total do
+              if lines[j]:match '^```%s*$' then
+                local code_end = j - 1
+                if code_start <= code_end then
+                  table.insert(cells, { start = code_start, finish = code_end })
+                end
+                i = j
+                break
+              end
+            end
+          end
+          i = i + 1
+        end
+
+        if #cells == 0 then
+          print 'No Python code blocks found'
+          return
+        end
+
+        -- Save cursor position
+        local saved_cursor = vim.api.nvim_win_get_cursor(0)
+
+        print(string.format('Running %d code blocks...', #cells))
+
+        -- Run cells sequentially with delay between each
+        local function run_cell(index)
+          if index > #cells then
+            vim.defer_fn(function()
+              vim.api.nvim_win_set_cursor(0, saved_cursor)
+              print 'All cells executed'
+            end, 100)
+            return
+          end
+
+          local cell = cells[index]
+          -- Debug: show what we're about to run
+          print(string.format('Running cell %d (lines %d-%d)', index, cell.start, cell.finish))
+
+          -- Select the cell content in visual line mode (same as run_code_block)
+          vim.cmd(string.format('normal! %dGV%dG', cell.start, cell.finish))
+
+          -- Use feedkeys like the working run_code_block function
+          local keys = vim.api.nvim_replace_termcodes(':<C-u>MoltenEvaluateVisual<CR>', true, false, true)
+          vim.api.nvim_feedkeys(keys, 'n', false)
+
+          -- Delay before next cell to allow execution to complete
+          vim.defer_fn(function()
+            run_cell(index + 1)
+          end, 200)
+        end
+
+        run_cell(1)
+      end
+
+      vim.api.nvim_create_user_command('MoltenRunAll', run_all_code_blocks, {})
+
       -- Function to run code block under cursor
       local function run_code_block()
         -- Save current cursor position
@@ -135,6 +203,7 @@ return {
       { '<leader>mh', ':MoltenHideOutput<CR>', desc = 'Molten [H]ide output' },
       { '<leader>mx', ':MoltenInterrupt<CR>', desc = 'Molten interrupt e[X]ecution' },
       { '<leader>me', ':MoltenEnterOutput<CR>', desc = 'Molten [E]nter output' },
+      { '<leader>mA', ':MoltenRunAll<CR>', desc = 'Molten run [A]ll cells' },
       -- Notebook operations
       { '<leader>mn', ':MoltenNext<CR>', desc = 'Molten [N]ext cell' },
       { '<leader>mp', ':MoltenPrev<CR>', desc = 'Molten [P]rev cell' },
